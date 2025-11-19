@@ -22,31 +22,31 @@ pip install cryptography
 ```
 
 ## Usage
-
 ### Encryption
-
-To encrypt a file, use the `encrypt` command followed by the filename. You will be prompted to enter your secret key.
+To encrypt a file or directory, use the `encrypt` command followed by the filename or directory name. You will be prompted to enter your secret key.
 
 ```bash
-python eternalkey.py encrypt <filename>
+python eternalkey.py encrypt <filename_or_directory> [-r]
 ```
 
 Example:
 ```bash
 python eternalkey.py encrypt mysecret.txt
+python eternalkey.py encrypt -r my_secret_folder
 ```
 
 ### Decryption
 
-To decrypt a file, use the `decrypt` command followed by the filename. You will be prompted for the secret key. Decrypted files are temporarily saved and then wiped.
+To decrypt a file or directory, use the `decrypt` command followed by the filename or directory name. You will be prompted for the secret key. Decrypted files are temporarily saved and then wiped.
 
 ```bash
-python eternalkey.py decrypt <filename>
+python eternalkey.py decrypt <filename_or_directory> [-r]
 ```
 
 Example:
 ```bash
 python eternalkey.py decrypt mysecret.txt
+python eternalkey.py decrypt my_secret_folder -r
 ```
 
 #### Preventing Auto-Wipe
@@ -59,13 +59,14 @@ python eternalkey.py decrypt --grab-on <filename>
 
 ### File Wiping
 
-To securely wipe a file, use the `wipe` command. This will overwrite the file's content before deleting it.
+To securely wipe a file or directory, use the `wipe` command. This will overwrite the file's content before deleting it.
 
 ```bash
-python eternalkey.py wipe <filename>
+python eternalkey.py wipe <filename_or_directory> [-r]
 ```
 
 Example:
 ```bash
 python eternalkey.py wipe old_sensitive_data.log
+python eternalkey.py wipe old_sensitive_folder -r
 ```

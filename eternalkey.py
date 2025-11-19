@@ -57,9 +57,11 @@ def main():
 
     encrypt_parser = subparsers.add_parser('encrypt', help='encrypt a file')
     encrypt_parser.add_argument('file', help='the file to encrypt')
+    encrypt_parser.add_argument('-r', '--recursive', action='store_true', help='recursively encrypt a directory')
 
     decrypt_parser = subparsers.add_parser('decrypt', help='decrypt a file')
     decrypt_parser.add_argument('file', help='the file to decrypt')
+    decrypt_parser.add_argument('-r', '--recursive', action='store_true', help='recursively decrypt a directory')
     decrypt_parser.add_argument('--grab-on', action='store_true', help='prevent auto-wiping of the decrypted file')
 
     wipe_parser = subparsers.add_parser('wipe', help='wipe a file')
@@ -73,16 +75,63 @@ def main():
 
     if args.operation == 'encrypt':
         key = getpass.getpass("secret key: ").encode()
-        with open(args.file, 'rb') as f:
-            data = f.read()
-        encrypted_data = aes_encrypt(data, key)
-        with open(args.file, 'wb') as f:
-            f.write(encrypted_data)
-        print(f"encrypted '{args.file}'")
+        if args.recursive:
+            if not os.path.isdir(args.file):
+                print(f"error: '{args.file}' is not a directory.")
+                return
+            for dirpath, _, filenames in os.walk(args.file):
+                for filename in filenames:
+                    file_path = os.path.join(dirpath, filename)
+                    try:
+                        with open(file_path, 'rb') as f:
+                            data = f.read()
+                        # Skip if already encrypted
+                        if data.startswith(b'EK3AES'):
+                            print(f"skipping already encrypted file: '{file_path}'")
+                            continue
+                        encrypted_data = aes_encrypt(data, key)
+                        with open(file_path, 'wb') as f:
+                            f.write(encrypted_data)
+                        print(f"encrypted '{file_path}'")
+                    except IOError as e:
+                        print(f"error processing '{file_path}': {e}")
+        else:
+            with open(args.file, 'rb') as f:
+                data = f.read()
+            encrypted_data = aes_encrypt(data, key)
+            with open(args.file, 'wb') as f:
+                f.write(encrypted_data)
+            print(f"encrypted '{args.file}'")
 
     elif args.operation == 'decrypt':
         key = getpass.getpass("secret key: ").encode()
 
+        if args.recursive:
+            if not os.path.isdir(args.file):
+                print(f"error: '{args.file}' is not a directory.")
+                return
+            for dirpath, _, filenames in os.walk(args.file):
+                for filename in filenames:
+                    file_path = os.path.join(dirpath, filename)
+                    try:
+                        with open(file_path, 'rb') as f:
+                            encrypted_data = f.read()
+                        
+                        if not encrypted_data.startswith(b'EK3AES'):
+                            print(f"skipping non-encrypted file: '{file_path}'")
+                            continue
+
+                        decrypted_data = aes_decrypt(encrypted_data, key)
+                        with open(file_path, 'wb') as f:
+                            f.write(decrypted_data)
+                        print(f"decrypted '{file_path}'")
+                    except (InvalidTag, ValueError):
+                        print(f"decryption failed for '{file_path}': wrong key or corrupt file")
+                    except IOError as e:
+                        print(f"error processing '{file_path}': {e}")
+            return # End of recursive logic
+
+        # The original single-file decryption logic starts here
         filename = os.path.basename(args.file)
         if filename.startswith('.') and filename.endswith('.enc'):
             decrypted_file_path = os.path.join(os.path.dirname(args.file), filename[1:-4])
