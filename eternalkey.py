@@ -8,9 +8,6 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 from cryptography.exceptions import InvalidTag
 
-print("EternalKey V3")
-print()
-
 def derive_key(password: bytes, salt: bytes, iterations: int = 200000) -> bytes:
     kdf = PBKDF2HMAC(
         algorithm=hashes.SHA256(),
@@ -69,6 +66,8 @@ def main():
     wipe_parser.add_argument('file', help='the file to wipe')
 
     help_parser = subparsers.add_parser('help', help='show this help message')
+
+    chicken_parser = subparsers.add_parser('bbqchickenalert', help='barbeque chicken alert')
 
     args = parser.parse_args()
 
@@ -139,6 +138,13 @@ def main():
         wipe_file(args.file)
 
     elif args.operation == 'help':
+        print("EternalKey V3")
+        parser.print_help()
+
+    elif args.operation == 'bbqchickenalert':
+        print("BARBEQUE CHICKEN ALERT!!!")
+
+    elif args.operation is None:
         parser.print_help()
 
 if __name__ == '__main__':
