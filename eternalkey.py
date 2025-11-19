@@ -187,7 +187,7 @@ def main():
         wipe_file(args.file)
 
     elif args.operation == 'help':
-        print("EternalKey V3")
+        print("EternalKey V3.1")
         parser.print_help()
 
     elif args.operation == 'bbqchickenalert':
